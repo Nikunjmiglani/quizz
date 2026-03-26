@@ -1,37 +1,39 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../../auth/[...nextauth]/route"
 
 export async function POST(req: Request) {
   try {
-    const { userId, quizId } = await req.json();
+    const session = await getServerSession(authOptions)
 
-    if (!userId || !quizId) {
-      return Response.json({ success: false }, { status: 400 });
-    }
-
-    const existing = await prisma.attempt.findFirst({
-      where: { userId, quizId },
-    });
-
-    if (existing) {
+    if (!session?.user?.id) {
       return Response.json(
-        { success: false, message: "Already attempted" },
-        { status: 400 }
-      );
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      )
     }
+
+    const { quizId } = await req.json()
 
     const attempt = await prisma.attempt.create({
       data: {
-        userId,
         quizId,
-        score: 0,
+        userId: session.user.id,
         startedAt: new Date(),
-        endedAt: new Date(),
+        endedAt: null,
+        score: 0,
       },
-    });
+    })
 
-    return Response.json({ success: true, data: attempt });
+    return Response.json({
+      success: true,
+      attemptId: attempt.id,
+    })
   } catch (error) {
-    console.error(error);
-    return Response.json({ success: false }, { status: 500 });
+    console.error(error)
+    return Response.json(
+      { success: false, message: "Server error" },
+      { status: 500 }
+    )
   }
 }

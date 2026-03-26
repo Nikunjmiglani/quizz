@@ -1,12 +1,24 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../../auth/[...nextauth]/route"
 
 export async function POST(req: Request) {
   try {
-    const { title, questions } = await req.json();
+    const session = await getServerSession(authOptions)
 
-    if (!title || !questions) {
-      return Response.json({ success: false }, { status: 400 });
+    if (!session?.user?.id) {
+      return Response.json({ success: false }, { status: 401 })
     }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    })
+
+    if (user?.role !== "admin") {
+      return Response.json({ success: false }, { status: 403 })
+    }
+
+    const { title, questions } = await req.json()
 
     const quiz = await prisma.quiz.create({
       data: {
@@ -19,12 +31,11 @@ export async function POST(req: Request) {
           })),
         },
       },
-      include: { questions: true },
-    });
+    })
 
-    return Response.json({ success: true, data: quiz });
+    return Response.json({ success: true, quiz })
   } catch (error) {
-    console.error(error);
-    return Response.json({ success: false }, { status: 500 });
+    console.error(error)
+    return Response.json({ success: false }, { status: 500 })
   }
 }

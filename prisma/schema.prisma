@@ -11,9 +11,10 @@ model User {
   id       String   @id @default(cuid())
   name     String
   email    String   @unique
+  password String
+  role     String   @default("user") 
   attempts Attempt[]
 }
-
 model Quiz {
   id        String     @id @default(cuid())
   title     String
@@ -42,7 +43,7 @@ model Attempt {
 
   score      Int
   startedAt  DateTime
-  endedAt    DateTime
+  endedAt    DateTime?
 
   suspicious Boolean  @default(false)
 }

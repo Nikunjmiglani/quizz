@@ -5,6 +5,7 @@
      "types": ["next-auth"],
     "allowJs": true,
     "skipLibCheck": true,
+     "typeRoots": ["./types", "./node_modules/@types"],
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,

@@ -8,6 +8,7 @@ import {
   Activity,
   Target,
   AlertTriangle,
+  TrendingUp,
 } from "lucide-react"
 
 import { IncreaseSizePieChart } from "@/components/charts/pie-chart"
@@ -30,7 +31,6 @@ export default function Dashboard() {
       const res = await fetch("/api/dashboard", {
         credentials: "include",
       })
-
       const result = await res.json()
       if (result.success) setData(result.data)
     }
@@ -39,125 +39,152 @@ export default function Dashboard() {
   }, [status])
 
   if (status === "loading") {
-    return <div className="h-screen flex items-center justify-center text-gray-400">Checking auth...</div>
+    return (
+      <div className="min-h-dvh flex items-center justify-center text-gray-400">
+        Loading...
+      </div>
+    )
   }
 
-  if (!data) {
-    return <div className="h-screen flex items-center justify-center text-gray-400">Loading dashboard...</div>
-  }
+  if (!data) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#020617] text-white">
+    <div className="min-h-dvh bg-[#0B0F19] text-white">
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
         {/* HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              Dashboard
+            <h1 className="text-2xl sm:text-3xl font-semibold">
+              Analytics Dashboard
             </h1>
-            <p className="text-gray-400 mt-1 text-sm sm:text-base">
-              Welcome back, {session?.user?.name}
+            <p className="text-gray-400 text-sm">
+              Overview of your quiz performance
             </p>
           </div>
 
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-red-500/90 hover:bg-red-600 rounded-lg transition w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-sm"
           >
             <LogOut size={16} />
             Logout
           </button>
         </div>
 
-        {/* STATS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* KPI CARDS */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
 
-          {/* CARD */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.02 }}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 shadow-md"
-          >
-            <div className="flex justify-between items-center">
-              <p className="text-gray-400 text-sm">Total Attempts</p>
-              <Activity className="text-blue-400" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold mt-3">
-              {data.totalAttempts}
-            </h2>
-          </motion.div>
+          <KpiCard
+            title="Attempts"
+            value={data.totalAttempts}
+            icon={<Activity size={18} />}
+          />
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            whileHover={{ scale: 1.02 }}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 shadow-md"
-          >
-            <div className="flex justify-between items-center">
-              <p className="text-gray-400 text-sm">Average Score</p>
-              <Target className="text-green-400" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold mt-3">
-              {data.avgScore}%
-            </h2>
-          </motion.div>
+          <KpiCard
+            title="Avg Score"
+            value={`${data.avgScore}%`}
+            icon={<Target size={18} />}
+          />
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            whileHover={{ scale: 1.02 }}
-            className="bg-white/5 backdrop-blur-xl border border-red-500/20 rounded-xl p-5 shadow-md"
-          >
-            <div className="flex justify-between items-center">
-              <p className="text-gray-400 text-sm">Suspicious</p>
-              <AlertTriangle className="text-red-400" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold mt-3 text-red-400">
-              {data.suspiciousCount}
-            </h2>
-          </motion.div>
+          <KpiCard
+            title="Suspicious"
+            value={data.suspiciousCount}
+            icon={<AlertTriangle size={18} />}
+            danger
+          />
+
+          <KpiCard
+            title="Trend"
+            value="+12%"
+            icon={<TrendingUp size={18} />}
+            positive
+          />
         </div>
 
-        {/* CHARTS */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* MAIN ANALYTICS */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 shadow-md"
-          >
-            <h3 className="text-base font-semibold mb-4 text-gray-300">
-              Score Distribution
-            </h3>
-
-            <div className="w-full h-[280px] sm:h-[320px]">
-              <IncreaseSizePieChart data={data.scoreBuckets} />
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-5 shadow-md"
-          >
-            <h3 className="text-base font-semibold mb-4 text-gray-300">
+          {/* BIG CHART */}
+          <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-xl p-5">
+            <h3 className="text-sm text-gray-400 mb-3">
               Attempts per Quiz
             </h3>
 
-            <div className="w-full h-[280px] sm:h-[320px]">
+            <div className="h-[260px] sm:h-[320px]">
               <AttemptsBarChart data={data.attemptsPerQuiz} />
             </div>
-          </motion.div>
+          </div>
 
+          {/* PIE */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+            <h3 className="text-sm text-gray-400 mb-3">
+              Score Distribution
+            </h3>
+
+            <div className="h-[260px] sm:h-[320px]">
+              <IncreaseSizePieChart data={data.scoreBuckets} />
+            </div>
+          </div>
         </div>
+
+        {/* INSIGHTS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <InsightCard
+            title="Performance Insight"
+            text="Your average score is improving. Focus on consistency to push above 80%."
+          />
+
+          <InsightCard
+            title="Risk Alert"
+            text={`${data.suspiciousCount} suspicious attempts detected. Review flagged users.`}
+            danger
+          />
+        </div>
+
       </div>
+    </div>
+  )
+}
+
+function KpiCard({ title, value, icon, danger, positive }: any) {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      className="bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center"
+    >
+      <div>
+        <p className="text-xs text-gray-400">{title}</p>
+        <h2
+          className={`text-lg font-semibold mt-1 ${
+            danger
+              ? "text-red-400"
+              : positive
+              ? "text-green-400"
+              : ""
+          }`}
+        >
+          {value}
+        </h2>
+      </div>
+      <div className="text-gray-300">{icon}</div>
+    </motion.div>
+  )
+}
+
+function InsightCard({ title, text, danger }: any) {
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+      <h3
+        className={`text-sm font-medium mb-2 ${
+          danger ? "text-red-400" : "text-gray-300"
+        }`}
+      >
+        {title}
+      </h3>
+      <p className="text-xs text-gray-400">{text}</p>
     </div>
   )
 }

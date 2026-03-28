@@ -33,17 +33,18 @@ model Question {
 }
 
 model Attempt {
-  id         String   @id @default(cuid())
+  id          String   @id @default(cuid())
+  userId      String
+  quizId      String
+  score       Int
+  total       Int
+  suspicious  Boolean  @default(false)
+  startedAt   DateTime @default(now())
+  endedAt     DateTime? 
 
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  
+  user User @relation(fields: [userId], references: [id])
 
-  quizId     String
-  quiz       Quiz     @relation(fields: [quizId], references: [id])
-
-  score      Int
-  startedAt  DateTime
-  endedAt    DateTime?
-
-  suspicious Boolean  @default(false)
+ 
+  quiz Quiz @relation(fields: [quizId], references: [id])
 }

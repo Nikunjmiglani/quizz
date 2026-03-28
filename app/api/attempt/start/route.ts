@@ -15,6 +15,29 @@ export async function POST(req: Request) {
 
     const { quizId } = await req.json()
 
+    if (!quizId) {
+      return Response.json(
+        { success: false, message: "Quiz ID required" },
+        { status: 400 }
+      )
+    }
+
+    
+    const quiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
+      include: { questions: true },
+    })
+
+    if (!quiz) {
+      return Response.json(
+        { success: false, message: "Quiz not found" },
+        { status: 404 }
+      )
+    }
+
+    const total = quiz.questions.length
+
+    // 🚀 Create attempt with total
     const attempt = await prisma.attempt.create({
       data: {
         quizId,
@@ -22,6 +45,7 @@ export async function POST(req: Request) {
         startedAt: new Date(),
         endedAt: null,
         score: 0,
+        total, // ✅ REQUIRED FIX
       },
     })
 

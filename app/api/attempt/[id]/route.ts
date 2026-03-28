@@ -4,29 +4,33 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params
+  try {
+    const { id } = await params 
 
-  const attempt = await prisma.attempt.findUnique({
-    where: { id },
-    include: {
-      quiz: {
-        include: {
-          questions: true,
-        },
+    const attempt = await prisma.attempt.findUnique({
+      where: { id },
+    })
+
+    if (!attempt) {
+      return Response.json(
+        { success: false, message: "Attempt not found" },
+        { status: 404 }
+      )
+    }
+
+    return Response.json({
+      success: true,
+      data: {
+        score: attempt.score,
+        total: attempt.total,
+        suspicious: attempt.suspicious,
       },
-    },
-  })
-
-  if (!attempt) {
-    return Response.json({ success: false }, { status: 404 })
+    })
+  } catch (error) {
+    console.error(error)
+    return Response.json(
+      { success: false },
+      { status: 500 }
+    )
   }
-
-  return Response.json({
-    success: true,
-    data: {
-      score: attempt.score,
-      total: attempt.quiz.questions.length,
-      suspicious: attempt.suspicious,
-    },
-  })
 }

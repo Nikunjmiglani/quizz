@@ -1,6 +1,12 @@
 "use client"
 
-import { PieChart, Pie, Cell, Tooltip } from "recharts"
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts"
 
 export function IncreaseSizePieChart({ data }: { data: any }) {
   const chartData = [
@@ -12,23 +18,23 @@ export function IncreaseSizePieChart({ data }: { data: any }) {
   ]
 
   return (
-    <div className="p-4 border rounded">
-      <h2 className="mb-4 font-semibold">Score Distribution</h2>
-
-      <PieChart width={300} height={300}>
-        <Pie
-          data={chartData}
-          dataKey="value"
-          nameKey="name"
-          outerRadius={100}
-          label
-        >
-          {chartData.map((entry, index) => (
-            <Cell key={index} fill={entry.fill} />
-          ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
+    <div className="w-full h-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            outerRadius="80%"
+            label
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={index} fill={entry.fill} />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   )
 }

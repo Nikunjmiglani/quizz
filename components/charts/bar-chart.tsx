@@ -1,19 +1,31 @@
 "use client"
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts"
 
 export function AttemptsBarChart({ data }: { data: any[] }) {
   return (
-    <div className="p-4 border rounded shadow">
-      <h2 className="mb-4 font-semibold">Attempts per Quiz</h2>
-
-      <BarChart width={500} height={300} data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="attempts" fill="#3b82f6" />
-      </BarChart>
+    <div className="w-full h-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 12 }}
+            interval={0}
+          />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip />
+          <Bar dataKey="attempts" fill="#3b82f6" />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   )
 }

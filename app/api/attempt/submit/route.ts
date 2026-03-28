@@ -53,13 +53,14 @@ export async function POST(req: Request) {
       isCheating || timeTaken < 5
 
     await prisma.attempt.update({
-      where: { id: attemptId },
-      data: {
-        score,
-        endedAt: new Date(),
-        suspicious,
-      },
-    })
+  where: { id: attemptId },
+  data: {
+    score,
+    total: attempt.quiz.questions.length,
+    endedAt: new Date(),
+    suspicious,
+  },
+})
 
     return Response.json({
       success: true,

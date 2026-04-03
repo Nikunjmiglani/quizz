@@ -7,20 +7,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id       String   @id @default(cuid())
-  name     String
-  email    String   @unique
-  password String
-  role     String   @default("user") 
-  attempts Attempt[]
+enum Role {
+  USER
+  CREATOR
+  ADMIN
 }
-model Quiz {
-  id        String     @id @default(cuid())
-  title     String
-  questions Question[]
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relations
   attempts  Attempt[]
-  createdAt DateTime   @default(now())
+  quizzes   Quiz[]   @relation("CreatorQuizzes")
+
+  @@index([role])
+}
+
+model Quiz {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+
+  creatorId   String
+  creator     User       @relation("CreatorQuizzes", fields: [creatorId], references: [id])
+
+  questions   Question[]
+  attempts    Attempt[]
+
+  createdAt   DateTime   @default(now())
+
+  @@index([creatorId])
+  @@index([createdAt])
 }
 
 model Question {
@@ -28,23 +52,34 @@ model Question {
   question  String
   options   Json
   answer    String
+
   quizId    String
-  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
 }
 
 model Attempt {
   id          String   @id @default(cuid())
+
   userId      String
   quizId      String
+
   score       Int
   total       Int
+
   suspicious  Boolean  @default(false)
+
   startedAt   DateTime @default(now())
-  endedAt     DateTime? 
+  endedAt     DateTime?
+   createdAt   DateTime @default(now())
 
-  
-  user User @relation(fields: [userId], references: [id])
+  // relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
- 
-  quiz Quiz @relation(fields: [quizId], references: [id])
+  @@index([userId])
+  @@index([quizId])
+  @@index([score])
+  @@index([createdAt])
 }

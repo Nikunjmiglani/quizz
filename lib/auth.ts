@@ -41,26 +41,30 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
 
-  callbacks: {
-    async jwt({ token, user }) {
-  if (user) {
-    const u = user as {
-      id: string
-      role: string
+ callbacks: {
+  async jwt({ token }) {
+    // 🔥 ALWAYS refresh from DB (not just on login)
+    if (token?.email) {
+      const user = await prisma.user.findUnique({
+        where: { email: token.email },
+        select: { id: true, role: true },
+      })
+
+      if (user) {
+        token.id = user.id
+        token.role = user.role
+      }
     }
 
-    token.id = u.id
-    token.role = u.role
-  }
-  return token
-},
-
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-      }
-      return session
-    },
+    return token
   },
+
+  async session({ session, token }) {
+    if (session.user) {
+      session.user.id = token.id as string
+      session.user.role = token.role as "USER" | "CREATOR" | "ADMIN"
+    }
+    return session
+  },
+}
 }

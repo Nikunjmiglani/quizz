@@ -3,12 +3,37 @@ import { NextResponse } from "next/server"
 
 export default withAuth(
   function middleware(req) {
-    const isLoggedIn = !!req.nextauth.token
-    const isLoginPage = req.nextUrl.pathname === "/login"
+    const token = req.nextauth.token
+    const pathname = req.nextUrl.pathname
 
-    if (isLoginPage && isLoggedIn) {
+    const isLoggedIn = !!token
+
+    if (pathname === "/login" && isLoggedIn) {
       return NextResponse.redirect(new URL("/dashboard", req.url))
     }
+
+    if (pathname.startsWith("/dashboard") && !isLoggedIn) {
+      return NextResponse.redirect(new URL("/login", req.url))
+    }
+
+    if (pathname.startsWith("/quiz/create")) {
+  if (!isLoggedIn) {
+    return NextResponse.redirect(new URL("/login", req.url))
+  }
+
+  if (token.role !== "CREATOR" && token.role !== "ADMIN") {
+    return NextResponse.redirect(new URL("/dashboard", req.url))
+  }
+}
+if (pathname.startsWith("/creator")) {
+  if (!isLoggedIn) {
+    return NextResponse.redirect(new URL("/login", req.url))
+  }
+
+  if (token.role !== "CREATOR" && token.role !== "ADMIN") {
+    return NextResponse.redirect(new URL("/dashboard", req.url))
+  }
+}
   },
   {
     pages: {
@@ -19,9 +44,9 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/dashboard",
-    "/quiz/:path*",
-    "/quizzes/:path*",
-    "/api/attempt/:path*",
-  ],
+  "/dashboard/:path*",
+  "/quiz/create/:path*",
+  "/creator/:path*",
+  "/api/attempt/:path*",
+]
 }

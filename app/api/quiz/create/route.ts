@@ -14,17 +14,20 @@ export async function POST(req: Request) {
       )
     }
 
-    // ✅ Role check (NO DB CALL)
-    if (session.user.role !== "admin") {
+    // ✅ Role check (CREATOR or ADMIN)
+    if (
+      session.user.role !== "CREATOR" &&
+      session.user.role !== "ADMIN"
+    ) {
       return Response.json(
         { success: false, message: "Forbidden" },
         { status: 403 }
       )
     }
 
-    const { title, questions } = await req.json()
+    const { title, description, questions } = await req.json()
 
-    // ⚠️ basic validation (you skipped this)
+    // ✅ Validation
     if (!title || !questions?.length) {
       return Response.json(
         { success: false, message: "Invalid data" },
@@ -35,6 +38,9 @@ export async function POST(req: Request) {
     const quiz = await prisma.quiz.create({
       data: {
         title,
+        description,
+        creatorId: session.user.id, // 🔥 CRITICAL FIX
+
         questions: {
           create: questions.map((q: any) => ({
             question: q.question,
@@ -42,6 +48,9 @@ export async function POST(req: Request) {
             answer: q.answer,
           })),
         },
+      },
+      include: {
+        questions: true,
       },
     })
 

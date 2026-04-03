@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth/next"
+import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
 
+    // 🔒 Must be logged in
     if (!session?.user?.id) {
       return Response.json(
         { success: false, message: "Unauthorized" },
@@ -22,7 +23,6 @@ export async function POST(req: Request) {
       )
     }
 
-    
     const quiz = await prisma.quiz.findUnique({
       where: { id: quizId },
       include: { questions: true },
@@ -37,15 +37,14 @@ export async function POST(req: Request) {
 
     const total = quiz.questions.length
 
-    // 🚀 Create attempt with total
     const attempt = await prisma.attempt.create({
       data: {
         quizId,
         userId: session.user.id,
+        score: 0,
+        total,
         startedAt: new Date(),
         endedAt: null,
-        score: 0,
-        total, // ✅ REQUIRED FIX
       },
     })
 

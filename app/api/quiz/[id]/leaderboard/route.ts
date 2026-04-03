@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma"
+import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const quizId = params.id
+    const { id: quizId } = await context.params
 
     const attempts = await prisma.attempt.findMany({
       where: {
@@ -29,7 +30,7 @@ export async function GET(
     })
 
     // ✅ keep BEST attempt per user
-    const bestAttemptsMap = new Map()
+    const bestAttemptsMap = new Map<string, typeof attempts[0]>()
 
     for (const attempt of attempts) {
       const existing = bestAttemptsMap.get(attempt.userId)
@@ -54,10 +55,10 @@ export async function GET(
         user: entry.user,
       }))
 
-    return Response.json({ success: true, leaderboard })
+    return NextResponse.json({ success: true, leaderboard })
   } catch (error) {
     console.error(error)
-    return Response.json(
+    return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
     )

@@ -62,7 +62,7 @@ const features: Feature[] = [
 const stats: Stat[] = [
   { value: "50+",   label: "Active Learners" },
   { value: "10+",   label: "Quizzes Created" },
-  { value: "99.9%", label: "Uptime"          },
+  { value: "99%", label: "Uptime"          },
   { value: "#1",    label: "Quiz Platform"   },
 ];
 

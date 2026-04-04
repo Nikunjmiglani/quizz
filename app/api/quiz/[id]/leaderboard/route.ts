@@ -3,16 +3,24 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id: quizId } = await context.params
+    const quizId = context.params.id
+
+    if (!quizId) {
+      return NextResponse.json(
+        { success: false, message: "Quiz ID missing" },
+        { status: 400 }
+      )
+    }
 
     const attempts = await prisma.attempt.findMany({
       where: {
         quizId,
-        endedAt: { not: null },
-        suspicious: false,
+        endedAt: { not: null }, // only completed attempts
+        // ❗ temporarily REMOVE this if debugging:
+        // suspicious: false,
       },
       orderBy: [
         { score: "desc" },
@@ -29,7 +37,7 @@ export async function GET(
       },
     })
 
-    // ✅ keep BEST attempt per user
+    // 🧠 best attempt per user
     const bestAttemptsMap = new Map<string, typeof attempts[0]>()
 
     for (const attempt of attempts) {
@@ -43,7 +51,10 @@ export async function GET(
     const leaderboard = Array.from(bestAttemptsMap.values())
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        return (
+          new Date(a.createdAt).getTime() -
+          new Date(b.createdAt).getTime()
+        )
       })
       .slice(0, 10)
       .map((entry, index) => ({
@@ -55,7 +66,10 @@ export async function GET(
         user: entry.user,
       }))
 
-    return NextResponse.json({ success: true, leaderboard })
+    return NextResponse.json({
+      success: true,
+      leaderboard,
+    })
   } catch (error) {
     console.error(error)
     return NextResponse.json(

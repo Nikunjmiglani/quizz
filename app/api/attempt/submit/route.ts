@@ -2,10 +2,14 @@ import { prisma } from "@/lib/prisma"
 
 export async function POST(req: Request) {
   try {
-    const { attemptId, answers, isCheating } = await req.json()
+    const body = await req.json()
+    const { attemptId, answers, isCheating } = body
 
-    if (!attemptId || !answers) {
-      return Response.json({ success: false }, { status: 400 })
+    if (!attemptId || !answers || typeof answers !== "object") {
+      return Response.json(
+        { success: false, message: "Invalid data" },
+        { status: 400 }
+      )
     }
 
     const attempt = await prisma.attempt.findUnique({
@@ -18,7 +22,10 @@ export async function POST(req: Request) {
     })
 
     if (!attempt) {
-      return Response.json({ success: false }, { status: 404 })
+      return Response.json(
+        { success: false, message: "Attempt not found" },
+        { status: 404 }
+      )
     }
 
     // 🚫 prevent resubmission
@@ -33,6 +40,7 @@ export async function POST(req: Request) {
     const timeTaken =
       (now.getTime() - attempt.startedAt.getTime()) / 1000
 
+    // ⛔ optional: time limit (keep or remove based on your quiz rules)
     if (timeTaken > 60) {
       return Response.json(
         { success: false, message: "Time exceeded" },
@@ -48,19 +56,20 @@ export async function POST(req: Request) {
       }
     }
 
-    // 🚀 improved suspicious logic
+    // ✅ realistic anti-cheat logic
     const suspicious =
-      isCheating || timeTaken < 5
+      isCheating === true ||
+      (timeTaken < 10 && score === attempt.quiz.questions.length)
 
-    await prisma.attempt.update({
-  where: { id: attemptId },
-  data: {
-    score,
-    total: attempt.quiz.questions.length,
-    endedAt: new Date(),
-    suspicious,
-  },
-})
+    const updated = await prisma.attempt.update({
+      where: { id: attemptId },
+      data: {
+        score,
+        total: attempt.quiz.questions.length,
+        endedAt: new Date(),
+        suspicious,
+      },
+    })
 
     return Response.json({
       success: true,
@@ -70,6 +79,9 @@ export async function POST(req: Request) {
     })
   } catch (error) {
     console.error(error)
-    return Response.json({ success: false }, { status: 500 })
+    return Response.json(
+      { success: false, message: "Server error" },
+      { status: 500 }
+    )
   }
 }

@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const quizId = context.params.id
+    const { id: quizId } = await context.params
 
     if (!quizId) {
       return NextResponse.json(
@@ -18,9 +18,7 @@ export async function GET(
     const attempts = await prisma.attempt.findMany({
       where: {
         quizId,
-        endedAt: { not: null }, // only completed attempts
-        // ❗ temporarily REMOVE this if debugging:
-        // suspicious: false,
+        endedAt: { not: null },
       },
       orderBy: [
         { score: "desc" },
@@ -37,7 +35,6 @@ export async function GET(
       },
     })
 
-    // 🧠 best attempt per user
     const bestAttemptsMap = new Map<string, typeof attempts[0]>()
 
     for (const attempt of attempts) {

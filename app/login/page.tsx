@@ -2,75 +2,212 @@
 
 import { signIn } from "next-auth/react"
 import { useState } from "react"
+import Link from "next/link"
+import { motion } from "framer-motion"
+import { Mail, Lock, ArrowRight, LogIn, Sparkles } from "lucide-react"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
 
   const handleLogin = async () => {
+    setLoading(true)
     await signIn("credentials", {
       email,
       password,
       callbackUrl: "/dashboard",
     })
+    setLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 px-4">
-      
-      <div className="bg-white/10 backdrop-blur-lg shadow-2xl rounded-2xl p-8 w-full max-w-md border border-white/20">
-        
-        {/* Heading */}
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
-          <p className="text-white/70 text-sm mt-1">
-            Login to your quiz dashboard
+    <div className="relative min-h-screen overflow-hidden bg-[#faf8f4] flex items-center justify-center px-4 py-12">
+
+      {/* ── Mesh gradient blobs ── */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-amber-300/20 blur-[100px]" />
+        <div className="absolute -right-32 top-0 h-[420px] w-[420px] rounded-full bg-orange-300/15 blur-[90px]" />
+        <div className="absolute bottom-0 left-1/3 h-[380px] w-[380px] rounded-full bg-sky-300/15 blur-[80px]" />
+      </div>
+
+      {/* ── Dot grid ── */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-60"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
+
+      {/* ── Floating shapes ── */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div
+          className="absolute left-[8%] top-[12%] h-3 w-3 rotate-12 rounded-md bg-orange-400/50 shadow-[0_0_12px_rgba(249,115,22,0.4)]"
+          style={{ animation: "float 7s ease-in-out infinite" }}
+        />
+        <div
+          className="absolute right-[10%] top-[18%] h-2 w-2 rounded-full bg-sky-400/60 shadow-[0_0_10px_rgba(14,165,233,0.4)]"
+          style={{ animation: "float 9s ease-in-out 1s infinite" }}
+        />
+        <div
+          className="absolute bottom-[20%] left-[15%] h-2.5 w-2.5 rotate-45 rounded-sm bg-amber-400/50"
+          style={{ animation: "float 6s ease-in-out 0.5s infinite" }}
+        />
+        <div
+          className="absolute bottom-[30%] right-[8%] h-2 w-2 rounded-full bg-rose-400/50"
+          style={{ animation: "float 8s ease-in-out 2s infinite" }}
+        />
+      </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.5; }
+          50% { transform: translateY(-18px) rotate(8deg); opacity: 0.9; }
+        }
+      `}</style>
+
+      <motion.div
+        initial={{ opacity: 0, y: 32 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-[420px]"
+      >
+        {/* ── Card ── */}
+        <div className="rounded-3xl border border-white/90 bg-white/80 p-10 shadow-[0_8px_48px_rgba(0,0,0,0.08),0_2px_12px_rgba(0,0,0,0.04)] backdrop-blur-xl">
+
+          {/* Logo */}
+          <Link href="/" className="mb-8 flex items-center justify-center gap-1">
+            <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-xl font-extrabold tracking-tight text-transparent [font-family:'Syne',sans-serif]">
+              QuizzKr
+            </span>
+            <span className="mb-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.6)]" />
+          </Link>
+
+          {/* Heading */}
+          <div className="mb-8 text-center">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+              <Sparkles size={11} className="text-orange-500" />
+              Welcome back
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 [font-family:'Syne',sans-serif]">
+              Sign in to continue
+            </h1>
+            <p className="mt-2 text-sm text-gray-400">
+              Continue your quiz journey
+            </p>
+          </div>
+
+          {/* Fields */}
+          <div className="flex flex-col gap-3">
+
+            {/* Email */}
+            <div className="relative">
+              <Mail
+                size={15}
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="w-full rounded-2xl border border-gray-200 bg-white py-3.5 pl-10 pr-4 text-sm text-gray-900 shadow-sm outline-none placeholder:text-gray-400 transition-all duration-200 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+              />
+            </div>
+
+            {/* Password */}
+            <div className="relative">
+              <Lock
+                size={15}
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="w-full rounded-2xl border border-gray-200 bg-white py-3.5 pl-10 pr-4 text-sm text-gray-900 shadow-sm outline-none placeholder:text-gray-400 transition-all duration-200 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+              />
+            </div>
+
+            {/* Forgot password */}
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-xs font-medium text-orange-500 transition hover:text-orange-600"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
+            {/* Submit */}
+            <motion.button
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleLogin}
+              disabled={loading}
+              className="mt-1 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 py-3.5 text-sm font-bold text-white shadow-[0_4px_18px_rgba(249,115,22,0.32)] transition-all duration-200 hover:shadow-[0_8px_28px_rgba(249,115,22,0.45)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? (
+                <>
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle
+                      className="opacity-25"
+                      cx="12" cy="12" r="10"
+                      stroke="currentColor" strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    />
+                  </svg>
+                  Signing in…
+                </>
+              ) : (
+                <>
+                  <LogIn size={15} />
+                  Sign In
+                  <ArrowRight size={14} />
+                </>
+              )}
+            </motion.button>
+          </div>
+
+          {/* Divider */}
+          <div className="my-6 flex items-center gap-3 text-xs font-medium uppercase tracking-wider text-gray-300">
+            <div className="h-px flex-1 bg-gray-100" />
+            or
+            <div className="h-px flex-1 bg-gray-100" />
+          </div>
+
+          {/* Sign up link */}
+          <p className="text-center text-sm text-gray-500">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/signup"
+              className="font-semibold text-orange-500 transition hover:text-orange-600 hover:underline"
+            >
+              Sign up for free
+            </Link>
           </p>
         </div>
 
-        {/* Inputs */}
-        <div className="flex flex-col gap-4">
-          <input
-            type="email"
-            placeholder="Email"
-            onChange={(e) => setEmail(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white transition"
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white transition"
-          />
-
-          {/* Button */}
-          <button
-            onClick={handleLogin}
-            className="mt-2 bg-white text-purple-600 font-semibold py-2 rounded-lg hover:bg-purple-100 transition duration-200 shadow-md"
-          >
-            Login
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="my-5 flex items-center gap-2 text-white/60 text-sm">
-          <div className="flex-1 h-px bg-white/30" />
-          OR
-          <div className="flex-1 h-px bg-white/30" />
-        </div>
-
-        {/* Signup */}
-        <p className="text-center text-sm text-white/80">
-          Don’t have an account?{" "}
-          <a
-            href="/signup"
-            className="text-white font-semibold underline hover:text-purple-200 transition"
-          >
-            Sign up
-          </a>
+        {/* Bottom note */}
+        <p className="mt-5 text-center text-xs text-gray-400">
+          By signing in, you agree to our{" "}
+          <Link href="/terms" className="underline hover:text-gray-600 transition">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="underline hover:text-gray-600 transition">
+            Privacy Policy
+          </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }

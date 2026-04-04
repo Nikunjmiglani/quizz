@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { signOut, useSession } from "next-auth/react"
 import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
+import { useState } from "react"
 import {
   LayoutDashboard,
   BookOpen,
@@ -11,279 +12,226 @@ import {
   LogOut,
   LogIn,
   UserPlus,
+  Trophy,
+  Menu,
+  X,
 } from "lucide-react"
+
+const NAV_LINKS = [
+  { href: "/dashboard",   label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/quizzes",     label: "Quizzes",     icon: BookOpen },
+  { href: "/history",     label: "History",     icon: History },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+]
 
 export default function Navbar() {
   const { data: session } = useSession()
   const pathname = usePathname()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const initials = session?.user?.name?.charAt(0).toUpperCase() ?? "U"
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap');
+    <div className="sticky top-0 z-50 border-b border-black/[0.07] shadow-sm"
+      style={{ background: "rgba(250,248,244,0.90)", backdropFilter: "blur(18px)" }}
+    >
+      {/* ── MAIN BAR ── */}
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-3">
 
-        .navbar-root {
-          position: sticky;
-          top: 0;
-          z-index: 50;
-          background: rgba(250, 248, 244, 0.82);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border-bottom: 1.5px solid rgba(0, 0, 0, 0.07);
-          box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0,0,0,0.03);
-        }
+        {/* LEFT: logo + desktop nav */}
+        <div className="flex items-center gap-6">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-0.5 no-underline">
+            <span
+              className="font-extrabold text-xl tracking-tight"
+              style={{
+                background: "linear-gradient(135deg, #f97316, #ef4444)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              QuizzKr
+            </span>
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-500 mb-3 ml-0.5 shadow-[0_0_6px_rgba(249,115,22,0.6)] animate-pulse" />
+          </Link>
 
-        .logo-text {
-          font-family: 'Syne', sans-serif;
-          font-weight: 800;
-          font-size: 1.35rem;
-          letter-spacing: -0.03em;
-          background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .logo-dot {
-          display: inline-block;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #f97316;
-          margin-left: 1px;
-          vertical-align: super;
-          box-shadow: 0 0 6px rgba(249,115,22,0.6);
-          animation: pulse 2s ease-in-out infinite;
-        }
-
-        .nav-link {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 7px 14px;
-          border-radius: 12px;
-          font-size: 0.875rem;
-          font-weight: 500;
-          color: #6b7280;
-          transition: all 0.2s ease;
-          position: relative;
-          cursor: pointer;
-          text-decoration: none;
-        }
-        .nav-link:hover {
-          color: #111827;
-          background: rgba(0,0,0,0.05);
-        }
-        .nav-link.active {
-          color: #ea580c;
-          background: rgba(249,115,22,0.08);
-          font-weight: 600;
-        }
-        .nav-link.active::after {
-          content: '';
-          position: absolute;
-          bottom: 4px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 16px;
-          height: 2px;
-          border-radius: 2px;
-          background: linear-gradient(90deg, #f97316, #ef4444);
-        }
-
-        .btn-logout {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 16px;
-          border-radius: 12px;
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: #b91c1c;
-          background: rgba(239,68,68,0.08);
-          border: 1.5px solid rgba(239,68,68,0.2);
-          transition: all 0.2s ease;
-          cursor: pointer;
-        }
-        .btn-logout:hover {
-          background: rgba(239,68,68,0.14);
-          border-color: rgba(239,68,68,0.35);
-          box-shadow: 0 2px 12px rgba(239,68,68,0.15);
-        }
-
-        .btn-login {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 16px;
-          border-radius: 12px;
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: #374151;
-          background: white;
-          border: 1.5px solid rgba(0,0,0,0.1);
-          box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-          transition: all 0.2s ease;
-          cursor: pointer;
-          text-decoration: none;
-        }
-        .btn-login:hover {
-          border-color: rgba(249,115,22,0.35);
-          box-shadow: 0 2px 12px rgba(249,115,22,0.12);
-          color: #111827;
-        }
-
-        .btn-signup {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 18px;
-          border-radius: 12px;
-          font-size: 0.875rem;
-          font-weight: 700;
-          color: white;
-          background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
-          box-shadow: 0 3px 14px rgba(249,115,22,0.3), 0 1px 4px rgba(0,0,0,0.08);
-          transition: all 0.2s ease;
-          cursor: pointer;
-          text-decoration: none;
-          border: none;
-        }
-        .btn-signup:hover {
-          box-shadow: 0 6px 22px rgba(249,115,22,0.42), 0 2px 6px rgba(0,0,0,0.1);
-          transform: translateY(-1px);
-        }
-
-        .user-chip {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 6px 12px 6px 6px;
-          border-radius: 999px;
-          background: white;
-          border: 1.5px solid rgba(0,0,0,0.07);
-          box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-        }
-        .user-avatar {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #f97316, #ef4444);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 11px;
-          font-weight: 700;
-          color: white;
-          flex-shrink: 0;
-        }
-        .user-name {
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: #374151;
-          max-width: 120px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-      `}</style>
-
-      <div className="navbar-root">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-
-          {/* ── LEFT ────────────────────────────────────────────────────── */}
-          <div className="flex items-center gap-8">
-
-            {/* Logo */}
-            <Link href="/" style={{ textDecoration: "none" }}>
-              <motion.div whileHover={{ scale: 1.04 }} className="flex items-center">
-                <span className="logo-text">QuizzKr</span>
-                <span className="logo-dot" />
-              </motion.div>
-            </Link>
-
-            {/* Nav Links */}
-            <nav className="hidden items-center gap-1 md:flex">
-              <NavItem href="/dashboard" active={pathname === "/dashboard"}>
-                <LayoutDashboard size={15} />
-                Dashboard
-              </NavItem>
-              <NavItem href="/quizzes" active={pathname === "/quizzes"}>
-                <BookOpen size={15} />
-                Quizzes
-              </NavItem>
-              <NavItem href="/history" active={pathname === "/history"}>
-                <History size={15} />
-                History
-              </NavItem>
-            </nav>
-          </div>
-
-          {/* ── RIGHT ───────────────────────────────────────────────────── */}
-          <div className="flex items-center gap-2.5">
-            {session ? (
-              <>
-                {/* User chip */}
-                <div className="user-chip hidden sm:flex">
-                  <div className="user-avatar">
-                    {session.user?.name?.charAt(0).toUpperCase() ?? "U"}
-                  </div>
-                  <span className="user-name">{session.user?.name}</span>
-                </div>
-
-                {/* Logout */}
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => signOut({ callbackUrl: "/login" })}
-                  className="btn-logout"
+          {/* Desktop nav links */}
+          <nav className="hidden md:flex items-center gap-1">
+            {NAV_LINKS.map(({ href, label, icon: Icon }) => {
+              const active = pathname === href
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all duration-200
+                    ${active
+                      ? "text-orange-600 bg-orange-500/[0.08] font-semibold"
+                      : "text-gray-500 hover:text-gray-900 hover:bg-black/[0.05]"
+                    }`}
                 >
-                  <LogOut size={15} />
-                  Logout
-                </motion.button>
-              </>
-            ) : (
-              <>
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Link href="/login" className="btn-login">
-                    <LogIn size={15} />
-                    Login
-                  </Link>
-                </motion.div>
+                  <Icon size={15} />
+                  {label}
+                  {active && (
+                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-gradient-to-r from-orange-500 to-red-500" />
+                  )}
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
 
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Link href="/signup" className="btn-signup">
-                    <UserPlus size={15} />
-                    Sign Up
-                  </Link>
-                </motion.div>
-              </>
-            )}
-          </div>
+        {/* RIGHT: auth + hamburger */}
+        <div className="flex items-center gap-2">
+          {session ? (
+            <>
+              {/* User chip — hidden on xs */}
+              <div className="hidden sm:flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-white border border-black/[0.07] shadow-sm">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                  style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}
+                >
+                  {initials}
+                </div>
+                <span className="text-[0.8rem] font-semibold text-gray-700 max-w-[100px] truncate">
+                  {session.user?.name}
+                </span>
+              </div>
 
+              {/* Logout */}
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-red-700 bg-red-500/[0.08] border border-red-500/20 hover:bg-red-500/[0.14] hover:border-red-500/35 transition-all duration-200 cursor-pointer"
+              >
+                <LogOut size={15} />
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 bg-white border border-black/10 shadow-sm hover:border-orange-400/35 transition-all duration-200"
+              >
+                <LogIn size={15} />
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white border-none transition-all duration-200 hover:-translate-y-px"
+                style={{
+                  background: "linear-gradient(135deg, #f97316, #ef4444)",
+                  boxShadow: "0 3px 14px rgba(249,115,22,0.3)",
+                }}
+              >
+                <UserPlus size={15} />
+                Sign Up
+              </Link>
+            </>
+          )}
+
+          {/* Hamburger — always visible on mobile */}
+          <button
+            onClick={() => setMobileOpen((v) => !v)}
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl bg-white border border-black/[0.08] shadow-sm text-gray-600 hover:text-orange-500 hover:border-orange-400/30 transition-all duration-200 cursor-pointer"
+          >
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
         </div>
       </div>
-    </>
-  )
-}
 
-function NavItem({
-  href,
-  children,
-  active,
-}: {
-  href: string
-  children: React.ReactNode
-  active: boolean
-}) {
-  return (
-    <Link href={href} className={`nav-link ${active ? "active" : ""}`}>
-      <motion.span
-        whileHover={{ scale: 1.04 }}
-        className="flex items-center gap-1.5"
-      >
-        {children}
-      </motion.span>
-    </Link>
+      {/* ── MOBILE DRAWER ── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="overflow-hidden md:hidden border-t border-black/[0.06]"
+            style={{ background: "rgba(252,250,246,0.97)", backdropFilter: "blur(20px)" }}
+          >
+            <div className="px-4 py-3 space-y-1">
+
+              {/* Nav links */}
+              {NAV_LINKS.map(({ href, label, icon: Icon }) => {
+                const active = pathname === href
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[0.95rem] font-medium transition-all duration-200
+                      ${active
+                        ? "bg-orange-500/10 text-orange-600 font-bold"
+                        : "text-gray-600 hover:bg-orange-500/[0.06] hover:text-orange-600"
+                      }`}
+                  >
+                    <Icon size={17} />
+                    {label}
+                    {active && (
+                      <span className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-500" />
+                    )}
+                  </Link>
+                )
+              })}
+
+              {/* Divider */}
+              <div className="my-2 border-t border-black/[0.06]" />
+
+              {/* Auth section */}
+              {session ? (
+                <div className="space-y-2">
+                  {/* User row */}
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white border border-black/[0.07]">
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
+                      style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}
+                    >
+                      {initials}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-gray-800 truncate">{session.user?.name}</p>
+                      <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Logout */}
+                  <button
+                    onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/login" }) }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold text-red-700 bg-red-500/[0.08] border border-red-500/20 hover:bg-red-500/[0.14] transition-all duration-200 cursor-pointer"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold text-gray-700 bg-white border border-black/10 shadow-sm hover:border-orange-400/35 transition-all duration-200"
+                  >
+                    <LogIn size={16} />
+                    Login
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold text-white transition-all duration-200"
+                    style={{
+                      background: "linear-gradient(135deg, #f97316, #ef4444)",
+                      boxShadow: "0 3px 14px rgba(249,115,22,0.3)",
+                    }}
+                  >
+                    <UserPlus size={16} />
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

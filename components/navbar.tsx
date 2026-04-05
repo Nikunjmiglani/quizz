@@ -21,7 +21,7 @@ const NAV_LINKS = [
   { href: "/dashboard",   label: "Dashboard",   icon: LayoutDashboard },
   { href: "/quizzes",     label: "Quizzes",     icon: BookOpen },
   { href: "/history",     label: "History",     icon: History },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+ 
 ]
 
 export default function Navbar() {

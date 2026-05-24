@@ -230,7 +230,7 @@ export default function Home() {
                   className="flex w-full items-center justify-center gap-2 rounded-2xl border border-violet-300 bg-violet-50 px-8 py-4 text-sm font-semibold text-violet-700 transition-all duration-300 hover:scale-105 hover:border-violet-400 hover:bg-violet-100 sm:w-auto sm:text-base"
                 >
                   <Sparkles size={15} className="text-violet-500" />
-                  Become Creator
+                  Become Creator!
                 </button>
               )}
 
